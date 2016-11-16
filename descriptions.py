@@ -48,7 +48,8 @@ def wd_extract_instance_from_claim(item, wd_property):
     list_claims = item.claims.get(wd_property)
     for claim in list_claims:
         instance = claim.getTarget()
-        yield instance.get(), len(list_claims)
+        instance.get(get_redirect=True)
+        yield instance, len(list_claims)
 
 
 def main():
@@ -65,17 +66,18 @@ def main():
                 #       item.descriptions[language])
                 for claim_instance, length in wd_extract_instance_from_claim(item,
                                                                              dict_properties.get('instance')):
-                    labels = claim_instance.get('labels')
+                    # x = claim_instance.labels
+                    labels = claim_instance.labels
                     if length > 1:
                         pass
                     elif language in labels:
-                        label = labels.get(language)
-                        # print ("Editing {} with description {}".format(item.labels[language], label))
+                        label = labels[language]
+                        print("Editing " + item.title() + " with description " + label)
                         item.editDescriptions(descriptions={language: label},
                                               summary=u'Added description for [{}] language.'.format(language))
                         i += 1
 
-                    if i == 3:
+                    if i == 1:
                         sys.exit(0)
 
         except Exception as e:
