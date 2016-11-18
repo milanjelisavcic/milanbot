@@ -102,6 +102,7 @@ def wd_extract_instance_from_claim(item, wd_property):
         instance.get(get_redirect=True)
         yield instance, len(list_claims)
 
+
 def log_done(verbose, formatstring, *parameters):
     with codecs.open("done.log.csv", "a", encoding="utf-8") as logfile:
         formattedstring = u'%s%s' % (formatstring, '\n')
@@ -125,7 +126,7 @@ def add_descriptions(repo, language, query):
     :param query:
     :return:
     """
-    i = 0
+    i = 1
     for item in wd_sparql_query(repo, query):
         try:
             if not language in item.descriptions:
@@ -139,19 +140,20 @@ def add_descriptions(repo, language, query):
                     dict_description[dict_langs.get('sr-cyrillic')] = labels[dict_langs.get('sr-cyrillic')]
                     dict_description[dict_langs.get('sr-latin')] = labels[dict_langs.get('sr-latin')]
 
-                    summary = u'Added description for [{}] language.'.format(language)
-                    # elif language in labels:
+                    summary = u'Added description [{}/250] for [{}] language.' \
+                        .format(i, ','.join(map(str, dict_description.keys())))
+
                     print("Editing " + item.title() + " with the [" + language + "] description: " + language)
                     item.editDescriptions(descriptions=dict_description, summary=summary)
 
                     i += 1
 
-                if i == 1:
+                if i == 250:
                     sys.exit(0)
         except ValueError:
             log_done(False, "ValueError occured on %s", item.title())
         except:
-            log_done(False, "Undefined error occured on %s-[%s]", item.title(), missing)
+            log_done(False, "Undefined error occured on %s-[%s]", item.title())
 
 
 def add_labels(repo, language, title):
