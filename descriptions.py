@@ -1,6 +1,8 @@
 # !/usr/local/bin/python
 # -*- coding: utf-8 -*-
 import sys
+import logging
+import codecs
 
 import pywikibot as pb
 from pywikibot import pagegenerators as pg
@@ -59,6 +61,21 @@ sparql_people = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q5 . ' \
                 '?wiki0 <http://schema.org/isPartOf> <https://sr.wikipedia.org/> }'
 
 
+def transliterate(word, translit_table):
+    converted_word = ''
+    try:
+        for char in word:
+            translit_char = ''
+            if char in translit_table:
+                translit_char = translit_table[char]
+            else:
+                translit_char = char
+            converted_word += translit_char
+    except Exception as e:
+        print(e)
+    return converted_word
+
+
 def wd_sparql_query(repo, query):
     """
     SPARQL query retrieving generator with a Wikidata list of items
@@ -85,6 +102,20 @@ def wd_extract_instance_from_claim(item, wd_property):
         instance.get(get_redirect=True)
         yield instance, len(list_claims)
 
+def log_done(verbose, formatstring, *parameters):
+    with codecs.open("done.log.csv", "a", encoding="utf-8") as logfile:
+        formattedstring = u'%s%s' % (formatstring, '\n')
+
+        try:
+            logfile.write(formattedstring % (parameters))
+        except:
+            exctype, value = sys.exc_info()[:2]
+            print("1) Error writing to logfile on: [%s] [%s]" % (exctype, value))
+            verbose = True  # now I want to see what!
+        logfile.close()
+    if verbose:
+        print(formatstring % (parameters))
+
 
 def add_descriptions(repo, language, query):
     """
@@ -105,8 +136,8 @@ def add_descriptions(repo, language, query):
                     labels = claim_instance.labels
                     dict_description = dict()
                     dict_description[language] = labels[language]
-                    dict_description[dict_langs.get('sr-cyrillic')] = labels[[dict_langs.get('sr-cyrillic')]]
-                    dict_description[dict_langs.get('sr-latin')] = labels[dict_langs.get('sr-latinic')]
+                    dict_description[dict_langs.get('sr-cyrillic')] = labels[dict_langs.get('sr-cyrillic')]
+                    dict_description[dict_langs.get('sr-latin')] = labels[dict_langs.get('sr-latin')]
 
                     summary = u'Added description for [{}] language.'.format(language)
                     # elif language in labels:
@@ -117,22 +148,10 @@ def add_descriptions(repo, language, query):
 
                 if i == 1:
                     sys.exit(0)
-
-        except Exception as e:
-            print("Error: ", e)
-            continue
-
-
-def transliterate(word, translit_table):
-    converted_word = ''
-    for char in word:
-        transchar = ''
-        if char in translit_table:
-            transchar = translit_table[char]
-        else:
-            transchar = char
-        converted_word += transchar
-    return converted_word
+        except ValueError:
+            log_done(False, "ValueError occured on %s", item.title())
+        except:
+            log_done(False, "Undefined error occured on %s-[%s]", item.title(), missing)
 
 
 def add_labels(repo, language, title):
@@ -153,8 +172,9 @@ def add_labels(repo, language, title):
             dict_labels = dict()
             dict_labels[dict_langs.get('sr-cyrillic')] = label
             dict_labels[dict_langs.get('sr-latin')] = translit
-            item.editLabels(labels=dict_labels,
-                            summary=u'Added labels for language script variations.')
+            summary = u'Added labels for [{}] script variations.'.format(language)
+
+            item.editLabels(labels=dict_labels, summary=summary)
         except Exception as e:
             print(e)
 
@@ -163,13 +183,13 @@ def main():
     print("---------------")
     repo = pb.Site('wikidata', 'wikidata')
     language = dict_langs.get('serbian')
+
     print("Main referring language is: " + language)
 
     # title = 'Q4167410'
     # add_labels(repo, language, title)
-    #
-    # add_descriptions(repo, language, sparql_disambig)
-    add_labels(repo, language, 'Q4167410')
+
+    add_descriptions(repo, language, sparql_disambig)
 
     print("---------------")
 
