@@ -49,19 +49,37 @@ dict_properties = {
     "instance": "P31"
 }
 
-# 'english': 'en',
 dict_langs = {
+    'arabic': 'ar',
     'belorussian': 'be',
     'bosnian': 'bs',
     'bulgarian': 'bg',
+    'catalan': 'ca',
+    'chinese-hakka': 'hak',
     'czech': 'cs',
     'croatian': 'hr',
+    'dutch': 'nl',
+    'english': 'en',
+    'english-british': 'en-gb',
+    'english-canadian': 'en-ca',
+    'german': 'de',
+    'german-austrian': 'de-at',
+    'greek': 'el',
     'macedonian': 'mk',
+    'polish': 'pl',
+    'portuguese': 'pt',
+    'portuguese-brazilian': 'pt-br',
+    'romanian': 'ro',
     'russian': 'ru',
     'serbian': 'sr',
     'sr-cyrillic': 'sr-ec',
     'sr-latin': 'sr-el',
-    'serbocroatian': 'sh'
+    'serbocroatian': 'sh',
+    'spanish': 'es',
+    'swedish': 'sv',
+    'turkish': 'tr',
+    'ukrainian': 'uk',
+    'vietnamese': 'vi'
 }
 
 sparql_disambig = 'SELECT ?item WHERE {?item wdt:P31 wd:Q4167410 }'
@@ -212,7 +230,7 @@ def main():
     # title = 'Q4167410'
     # add_labels(repo, language, title)
 
-    add_descriptions(repo, language, sparql_disambig_sr)
+    add_descriptions(repo, language, sparql_disambig)
 
     print("---------------")
 
