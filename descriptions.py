@@ -38,7 +38,7 @@ cyrillic_translit = {
     u'Ч': u'Č', u'ч': u'č',
     u'Џ': u'Dž', u'џ': u'dž',
     u'Ш': u'Š', u'ш': u'š',
-    u' ': u' '
+    u' ': u' ', u'%': u'%'
 }
 
 dict_items = {
@@ -49,13 +49,25 @@ dict_properties = {
     "instance": "P31"
 }
 
+# 'english': 'en',
 dict_langs = {
+    'belorussian': 'be',
+    'bosnian': 'bs',
+    'bulgarian': 'bg',
+    'czech': 'cs',
+    'croatian': 'hr',
+    'macedonian': 'mk',
+    'russian': 'ru',
     'serbian': 'sr',
     'sr-cyrillic': 'sr-ec',
-    'sr-latin': 'sr-el'
+    'sr-latin': 'sr-el',
+    'serbocroatian': 'sh'
 }
 
 sparql_disambig = 'SELECT ?item WHERE {?item wdt:P31 wd:Q4167410 }'
+sparql_disambig_sr = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q4167410 . ' \
+                     '?wiki0 <http://schema.org/about> ?item . ' \
+                     '?wiki0 <http://schema.org/isPartOf> <https://sr.wikipedia.org/> }'
 sparql_people = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q5 . ' \
                 '?wiki0 <http://schema.org/about> ?item . ' \
                 '?wiki0 <http://schema.org/isPartOf> <https://sr.wikipedia.org/> }'
@@ -129,31 +141,40 @@ def add_descriptions(repo, language, query):
     i = 1
     for item in wd_sparql_query(repo, query):
         try:
-            if not language in item.descriptions:
+            if not all(k in item.descriptions for k in dict_langs.values()):
                 for claim_instance, length in \
                         wd_extract_instance_from_claim(item, dict_properties.get('instance')):
                     if length > 1:
+                        print("skip: " + item.title() + " has multiple P31 claims.")
                         break
                     labels = claim_instance.labels
-                    dict_description = dict()
-                    dict_description[language] = labels[language]
-                    dict_description[dict_langs.get('sr-cyrillic')] = labels[dict_langs.get('sr-cyrillic')]
-                    dict_description[dict_langs.get('sr-latin')] = labels[dict_langs.get('sr-latin')]
+                    dict_descriptions = dict()
+                    for l in dict_langs.values():
+                        if not l in item.descriptions:
+                            dict_descriptions[l] = labels[l]
 
-                    summary = u'Added description [{}/250] for [{}] language.' \
-                        .format(i, ','.join(map(str, dict_description.keys())))
+                    if dict_descriptions:
+                        summary = u'Added description for [{langs}] language.' \
+                            .format(langs=','.join(map(str, dict_descriptions.keys())))
+                        # .format(i, ','.join(map(str, dict_descriptions.keys())))
+                        print("Editing [{ith}/{sum}] {q} for the [{langs}] descriptions"
+                              .format(ith=i,
+                                      sum=1000,
+                                      q=item.title(),
+                                      langs=','.join(map(str, dict_descriptions.keys()))))
+                        item.editDescriptions(descriptions=dict_descriptions, summary=summary)
+                        i += 1
 
-                    print("Editing " + item.title() + " with the [" + language + "] description: " + language)
-                    item.editDescriptions(descriptions=dict_description, summary=summary)
-
-                    i += 1
-
-                if i == 250:
+                if i == 1000:
                     sys.exit(0)
+            elif item.descriptions[language] != u'вишезначна одредница на Викимедији':
+                print("skip: " + item.title() + " has \'" + item.descriptions[language] + "\'")
         except ValueError:
-            log_done(False, "ValueError occured on %s", item.title())
+            # log_done(False, "ValueError occured on %s", item.title())
+            pass
         except:
-            log_done(False, "Undefined error occured on %s-[%s]", item.title())
+            # log_done(False, "Undefined error occured on %s-[%s]", item.title())
+            pass
 
 
 def add_labels(repo, language, title):
@@ -191,7 +212,7 @@ def main():
     # title = 'Q4167410'
     # add_labels(repo, language, title)
 
-    add_descriptions(repo, language, sparql_disambig)
+    add_descriptions(repo, language, sparql_disambig_sr)
 
     print("---------------")
 
