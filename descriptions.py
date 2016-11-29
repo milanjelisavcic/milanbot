@@ -49,37 +49,83 @@ dict_properties = {
     "instance": "P31"
 }
 
+#    'norwegian-bokmal': 'no',
 dict_langs = {
+    'afrikans': 'af',
     'arabic': 'ar',
+    'armenian': 'hy',
     'belorussian': 'be',
+    'belorussian-taraskievica': 'be-tarask',
     'bosnian': 'bs',
     'bulgarian': 'bg',
     'catalan': 'ca',
+    'cantonese': 'yue',
+    'chinese': 'zh',
+    'chinese-classical': 'lzh',
     'chinese-hakka': 'hak',
+    'chinese-min-nan': 'nan',
+    'chinese-cn': 'zh-cn',
+    'chinese-hans': 'zh-hans',
+    'chinese-hant': 'zh-hant',
+    'chinese-hongkong': 'zh-hk',
+    'chinese-mo': 'zh-mo',
+    'chinese-my': 'zh-my',
+    'chinese-singapore': 'zh-sg',
+    'chinese-taiwanese': 'zh-tw',
     'czech': 'cs',
     'croatian': 'hr',
     'dutch': 'nl',
+    'dutch-low-saxon': 'nds-nl',
     'english': 'en',
     'english-british': 'en-gb',
     'english-canadian': 'en-ca',
+    'estonian': 'et',
+    'esperanto': 'eo',
+    'frisian-west': 'fy',
+    'frisian-north': 'frr',
+    'french': 'fr',
+    'finish': 'fi',
+    'galician': 'gl',
     'german': 'de',
     'german-austrian': 'de-at',
+    'german-swiss': 'de-ch',
+    'georgian': 'ka',
     'greek': 'el',
+    'italian': 'it',
+    'japanese': 'ja',
+    'kannada': 'kn',
+    'khmer': 'km',
+    'korean': 'ko',
+    'latvian': 'lv',
     'macedonian': 'mk',
+    'malayalam': 'ml',
+    'mazandarani': 'mzn',
+    'norwegian-nynorsk': 'nn',
+    'occitan': 'oc',
+    'odia': 'or',
+    'pashto': 'ps',
+    'persian': 'fa',
     'polish': 'pl',
     'portuguese': 'pt',
     'portuguese-brazilian': 'pt-br',
+    'ripuarian': 'ksh',
     'romanian': 'ro',
     'russian': 'ru',
+    'sorani': 'ckb',
+    'scots': 'sco',
     'serbian': 'sr',
     'sr-cyrillic': 'sr-ec',
     'sr-latin': 'sr-el',
     'serbocroatian': 'sh',
+    'sicilian': 'scn',
     'spanish': 'es',
     'swedish': 'sv',
+    'tamil': 'ta',
+    'thai': 'th',
     'turkish': 'tr',
     'ukrainian': 'uk',
-    'vietnamese': 'vi'
+    'vietnamese': 'vi',
+    'welsh': 'cy',
 }
 
 sparql_disambig = 'SELECT ?item WHERE {?item wdt:P31 wd:Q4167410 }'
@@ -157,6 +203,7 @@ def add_descriptions(repo, language, query):
     :return:
     """
     i = 1
+    max_lim = 2000
     for item in wd_sparql_query(repo, query):
         try:
             if not all(k in item.descriptions for k in dict_langs.values()):
@@ -177,14 +224,14 @@ def add_descriptions(repo, language, query):
                         # .format(i, ','.join(map(str, dict_descriptions.keys())))
                         print("Editing [{ith}/{sum}] {q} for the [{langs}] descriptions"
                               .format(ith=i,
-                                      sum=1000,
+                                      sum=max_lim,
                                       q=item.title(),
                                       langs=','.join(map(str, dict_descriptions.keys()))))
                         item.editDescriptions(descriptions=dict_descriptions, summary=summary)
                         i += 1
 
-                if i == 1000:
-                    sys.exit(0)
+                # if i == max_lim:
+                #     sys.exit(0)
             elif item.descriptions[language] != u'вишезначна одредница на Викимедији':
                 print("skip: " + item.title() + " has \'" + item.descriptions[language] + "\'")
         except ValueError:
@@ -230,7 +277,7 @@ def main():
     # title = 'Q4167410'
     # add_labels(repo, language, title)
 
-    add_descriptions(repo, language, sparql_disambig)
+    add_descriptions(repo, language, sparql_disambig_sr)
 
     print("---------------")
 
