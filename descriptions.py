@@ -203,7 +203,7 @@ def add_descriptions(repo, language, query):
     :return:
     """
     i = 1
-    max_lim = 2000
+    max_lim = 20000
     for item in wd_sparql_query(repo, query):
         try:
             if not all(k in item.descriptions for k in dict_langs.values()):
@@ -220,20 +220,20 @@ def add_descriptions(repo, language, query):
 
                     if dict_descriptions:
                         summary = u'Added description for [{langs}] language.' \
-                            .format(langs=','.join(map(str, dict_descriptions.keys())))
+                            .format(langs=','.join(sorted(map(str, dict_descriptions.keys()))))
                         # .format(i, ','.join(map(str, dict_descriptions.keys())))
                         print("Editing [{ith}/{sum}] {q} for the [{langs}] descriptions"
                               .format(ith=i,
                                       sum=max_lim,
                                       q=item.title(),
-                                      langs=','.join(map(str, dict_descriptions.keys()))))
+                                      langs=','.join(sorted(map(str, dict_descriptions.keys())))))
                         item.editDescriptions(descriptions=dict_descriptions, summary=summary)
                         i += 1
 
                 # if i == max_lim:
                 #     sys.exit(0)
             elif item.descriptions[language] != u'вишезначна одредница на Викимедији':
-                print("skip: " + item.title() + " has \'" + item.descriptions[language] + "\'")
+                print("skip: {title} has {desc}".format(title=item.title(), desc=item.descriptions[language]))
         except ValueError:
             # log_done(False, "ValueError occured on %s", item.title())
             pass
