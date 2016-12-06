@@ -7,6 +7,9 @@ import codecs
 import pywikibot as pb
 from pywikibot import pagegenerators as pg
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 cyrillic_translit = {
     u'А': u'A', u'а': u'a',
     u'Б': u'B', u'б': u'b',
@@ -203,42 +206,37 @@ def add_descriptions(repo, language, query):
     :return:
     """
     i = 1
-    max_lim = 20000
     for item in wd_sparql_query(repo, query):
         try:
             if not all(k in item.descriptions for k in dict_langs.values()):
                 for claim_instance, length in \
                         wd_extract_instance_from_claim(item, dict_properties.get('instance')):
                     if length > 1:
-                        print("skip: " + item.title() + " has multiple P31 claims.")
+                        logger.info("{item} has multiple P31 claims.".format(item=item.title()))
                         break
                     labels = claim_instance.labels
                     dict_descriptions = dict()
-                    for l in dict_langs.values():
-                        if not l in item.descriptions:
-                            dict_descriptions[l] = labels[l]
+                    for lang_code in dict_langs.values():
+                        if not lang_code in item.descriptions:
+                            dict_descriptions[lang_code] = labels[lang_code]
+                        elif labels[lang_code] != item.descriptions[lang_code]:
+                            dict_descriptions[lang_code] = labels[lang_code]
 
                     if dict_descriptions:
                         summary = u'Added description for [{langs}] language.' \
                             .format(langs=','.join(sorted(map(str, dict_descriptions.keys()))))
-                        # .format(i, ','.join(map(str, dict_descriptions.keys())))
-                        print("Editing [{ith}/{sum}] {q} for the [{langs}] descriptions"
-                              .format(ith=i,
-                                      sum=max_lim,
-                                      q=item.title(),
-                                      langs=','.join(sorted(map(str, dict_descriptions.keys())))))
+                        logger.debug("{ith} edit {q} for the [{langs}] descriptions"
+                                     .format(ith=i,
+                                             q=item.title(),
+                                             langs=','.join(sorted(map(str, dict_descriptions.keys())))))
                         item.editDescriptions(descriptions=dict_descriptions, summary=summary)
                         i += 1
 
-                # if i == max_lim:
-                #     sys.exit(0)
-            elif item.descriptions[language] != u'вишезначна одредница на Викимедији':
-                print("skip: {title} has {desc}".format(title=item.title(), desc=item.descriptions[language]))
         except ValueError:
-            # log_done(False, "ValueError occured on %s", item.title())
+            logger.error("ValueError occured on {item}".format(item=item.title()))
             pass
         except:
-            # log_done(False, "Undefined error occured on %s-[%s]", item.title())
+            logger.error("Undefined error occured on %s-[%s]".format(item.title()))
             pass
 
 
@@ -268,18 +266,18 @@ def add_labels(repo, language, title):
 
 
 def main():
-    print("---------------")
+    logger.info("---- start ----")
     repo = pb.Site('wikidata', 'wikidata')
     language = dict_langs.get('serbian')
 
-    print("Main referring language is: " + language)
+    logger.info("Main referring language is: {lang}".format(lang=language))
 
     # title = 'Q4167410'
     # add_labels(repo, language, title)
 
     add_descriptions(repo, language, sparql_disambig_sr)
 
-    print("---------------")
+    logger.info("---- end ----")
 
 
 if __name__ == '__main__':
