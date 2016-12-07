@@ -204,7 +204,7 @@ def add_descriptions(repo, language, query):
     :param query:
     :return:
     """
-    multiple_statements_logger = logging.getLogger(__name__)
+    multiple_statements_logger = logging.getLogger("add_descriptions")
     handler = logging.FileHandler('multiple_statements.log')
     formatter = logging.Formatter('%(asctime)s - %(message)s')
     handler.setFormatter(formatter)
