@@ -1,14 +1,23 @@
 # !/usr/local/bin/python
 # -*- coding: utf-8 -*-
+
 import sys
 import logging
 import codecs
 
 import pywikibot as pb
 from pywikibot import pagegenerators as pg
+from pywikibot.data import api as pb_api
 
 logging.basicConfig(level=logging.INFO)
+
+# console = logging.StreamHandler()
+# console.setLevel(logging.INFO)
+# console_formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+# console.setFormatter(console_formatter)
+
 logger = logging.getLogger(__name__)
+# logger.addHandler(console)
 
 cyrillic_transliteration = {
     u'А': u'A', u'а': u'a',
@@ -133,8 +142,8 @@ dict_languages = {
 
 sparql_disambiguation = 'SELECT ?item WHERE {?item wdt:P31 wd:Q4167410 }'
 sparql_disambiguation_sr = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q4167410 . ' \
-                     '?wiki0 <http://schema.org/about> ?item . ' \
-                     '?wiki0 <http://schema.org/isPartOf> <https://sr.wikipedia.org/> }'
+                           '?wiki0 <http://schema.org/about> ?item . ' \
+                           '?wiki0 <http://schema.org/isPartOf> <https://sr.wikipedia.org/> }'
 sparql_people = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q5 . ' \
                 '?wiki0 <http://schema.org/about> ?item . ' \
                 '?wiki0 <http://schema.org/isPartOf> <https://sr.wikipedia.org/> }'
@@ -186,14 +195,14 @@ def log_done(verbose, formatstring, *parameters):
         formattedstring = u'%s%s' % (formatstring, '\n')
 
         try:
-            logfile.write(formattedstring % (parameters))
+            logfile.write(formattedstring % parameters)
         except:
             exctype, value = sys.exc_info()[:2]
             print("1) Error writing to logfile on: [%s] [%s]" % (exctype, value))
             verbose = True  # now I want to see what!
         logfile.close()
     if verbose:
-        print(formatstring % (parameters))
+        print(formatstring % parameters)
 
 
 def add_descriptions(repo, language, query):
@@ -204,20 +213,21 @@ def add_descriptions(repo, language, query):
     :param query:
     :return:
     """
-    multiple_statements_logger = logging.getLogger("add_descriptions")
+    multiple_statements_logger = logging.getLogger("multiple_statements")
     handler = logging.FileHandler('multiple_statements.log')
     formatter = logging.Formatter('%(asctime)s - %(message)s')
     handler.setFormatter(formatter)
     multiple_statements_logger.addHandler(handler)
 
-    i = 1
+    no_item = 1
     for item in wd_sparql_query(repo, query):
         try:
             if not all(k in item.descriptions for k in dict_languages.values()):
+                no_item += 1
                 for claim_instance, length in \
                         wd_extract_instance_from_claim(item, dict_properties.get('instance')):
                     if length > 1:
-                        multiple_statements_logger.info("{item}".format(item=item.title()))
+                        multiple_statements_logger.info("{no}: {item}".format(no=no_item, item=item.title()))
                         break
                     labels = claim_instance.labels
                     dict_descriptions = dict()
@@ -231,17 +241,23 @@ def add_descriptions(repo, language, query):
                         summary = u'Added description for [{langs}] language.' \
                             .format(langs=','.join(sorted(map(str, dict_descriptions.keys()))))
                         logger.debug("{ith} edit {q} for the [{langs}] descriptions"
-                                     .format(ith=i,
+                                     .format(ith=no_item,
                                              q=item.title(),
                                              langs=','.join(sorted(map(str, dict_descriptions.keys())))))
                         item.editDescriptions(descriptions=dict_descriptions, summary=summary)
-                        i += 1
 
-        except ValueError:
-            logger.error("ValueError occurred on {item}".format(item=item.title()))
+        except pb_api.APIError as e:
+            multiple_statements_logger.error("{no}: API error on {item} - {message}"
+                                             .format(no=no_item, item=item.title(),
+                                                     message=u''.join(str(e)).encode('utf-8')))
             pass
-        except:
-            logger.error("Undefined error occurred on {item}".format(item=item.title()))
+        except ValueError as e:
+            logger.error("{no}: ValueError occurred on {item} - {message}"
+                         .format(no=no_item, item=item.title(), message=u''.join(str(e)).encode('utf-8')))
+            pass
+        except Exception as e:
+            logger.error("{no}: Undefined error on {item} - {message}"
+                         .format(no=no_item, item=item.title(), message=u''.join(str(e)).encode('utf-8')))
             pass
 
 
