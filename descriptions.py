@@ -10,7 +10,7 @@ from pywikibot import pagegenerators as pg
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-cyrillic_translit = {
+cyrillic_transliteration = {
     u'А': u'A', u'а': u'a',
     u'Б': u'B', u'б': u'b',
     u'В': u'V', u'в': u'v',
@@ -53,7 +53,7 @@ dict_properties = {
 }
 
 #    'norwegian-bokmal': 'no',
-dict_langs = {
+dict_languages = {
     'afrikans': 'af',
     'arabic': 'ar',
     'armenian': 'hy',
@@ -131,8 +131,8 @@ dict_langs = {
     'welsh': 'cy',
 }
 
-sparql_disambig = 'SELECT ?item WHERE {?item wdt:P31 wd:Q4167410 }'
-sparql_disambig_sr = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q4167410 . ' \
+sparql_disambiguation = 'SELECT ?item WHERE {?item wdt:P31 wd:Q4167410 }'
+sparql_disambiguation_sr = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q4167410 . ' \
                      '?wiki0 <http://schema.org/about> ?item . ' \
                      '?wiki0 <http://schema.org/isPartOf> <https://sr.wikipedia.org/> }'
 sparql_people = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q5 . ' \
@@ -140,16 +140,15 @@ sparql_people = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q5 . ' \
                 '?wiki0 <http://schema.org/isPartOf> <https://sr.wikipedia.org/> }'
 
 
-def transliterate(word, translit_table):
+def transliterate(word, transliteration_table):
     converted_word = ''
     try:
         for char in word:
-            translit_char = ''
-            if char in translit_table:
-                translit_char = translit_table[char]
+            if char in transliteration_table:
+                transliteration_char = transliteration_table[char]
             else:
-                translit_char = char
-            converted_word += translit_char
+                transliteration_char = char
+            converted_word += transliteration_char
     except Exception as e:
         print(e)
     return converted_word
@@ -205,18 +204,24 @@ def add_descriptions(repo, language, query):
     :param query:
     :return:
     """
+    multiple_statements_logger = logging.getLogger(__name__)
+    handler = logging.FileHandler('multiple_statements.log')
+    formatter = logging.Formatter('%(asctime)s - %(message)s')
+    handler.setFormatter(formatter)
+    multiple_statements_logger.addHandler(handler)
+
     i = 1
     for item in wd_sparql_query(repo, query):
         try:
-            if not all(k in item.descriptions for k in dict_langs.values()):
+            if not all(k in item.descriptions for k in dict_languages.values()):
                 for claim_instance, length in \
                         wd_extract_instance_from_claim(item, dict_properties.get('instance')):
                     if length > 1:
-                        logger.info("{item} has multiple P31 claims.".format(item=item.title()))
+                        multiple_statements_logger.info("{item}".format(item=item.title()))
                         break
                     labels = claim_instance.labels
                     dict_descriptions = dict()
-                    for lang_code in dict_langs.values():
+                    for lang_code in dict_languages.values():
                         if lang_code not in item.descriptions:
                             dict_descriptions[lang_code] = labels[lang_code]
                         elif labels[lang_code] is not item.descriptions[lang_code]:
@@ -254,10 +259,10 @@ def add_labels(repo, language, title):
     if language in labels:
         try:
             label = labels[language]
-            translit = transliterate(label, cyrillic_translit)
+            translit = transliterate(label, cyrillic_transliteration)
             dict_labels = dict()
-            dict_labels[dict_langs.get('sr-cyrillic')] = label
-            dict_labels[dict_langs.get('sr-latin')] = translit
+            dict_labels[dict_languages.get('sr-cyrillic')] = label
+            dict_labels[dict_languages.get('sr-latin')] = translit
             summary = u'Added labels for [{}] script variations.'.format(language)
 
             item.editLabels(labels=dict_labels, summary=summary)
@@ -268,14 +273,14 @@ def add_labels(repo, language, title):
 def main():
     logger.info("---- start ----")
     repo = pb.Site('wikidata', 'wikidata')
-    language = dict_langs.get('serbian')
+    language = dict_languages.get('serbian')
 
     logger.info("Main referring language is: {lang}".format(lang=language))
 
     # title = 'Q4167410'
     # add_labels(repo, language, title)
 
-    add_descriptions(repo, language, sparql_disambig_sr)
+    add_descriptions(repo, language, sparql_disambiguation_sr)
 
     logger.info("---- end ----")
 
