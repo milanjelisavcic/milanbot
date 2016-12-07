@@ -217,9 +217,9 @@ def add_descriptions(repo, language, query):
                     labels = claim_instance.labels
                     dict_descriptions = dict()
                     for lang_code in dict_langs.values():
-                        if not lang_code in item.descriptions:
+                        if lang_code not in item.descriptions:
                             dict_descriptions[lang_code] = labels[lang_code]
-                        elif labels[lang_code] != item.descriptions[lang_code]:
+                        elif labels[lang_code] is not item.descriptions[lang_code]:
                             dict_descriptions[lang_code] = labels[lang_code]
 
                     if dict_descriptions:
@@ -233,10 +233,10 @@ def add_descriptions(repo, language, query):
                         i += 1
 
         except ValueError:
-            logger.error("ValueError occured on {item}".format(item=item.title()))
+            logger.error("ValueError occurred on {item}".format(item=item.title()))
             pass
         except:
-            logger.error("Undefined error occured on %s-[%s]".format(item.title()))
+            logger.error("Undefined error occurred on {item}".format(item=item.title()))
             pass
 
 
