@@ -208,7 +208,7 @@ def add_descriptions(repo, language, query):
     i = 1
     for item in wd_sparql_query(repo, query):
         try:
-            if not all(k in item.descriptions for k in dict_langs.values()):
+            if all(k not in item.descriptions for k in dict_langs.values()):
                 for claim_instance, length in \
                         wd_extract_instance_from_claim(item, dict_properties.get('instance')):
                     if length > 1:
