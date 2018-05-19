@@ -1,2 +1,2 @@
 # milanbot
-Bot scripts for Wikidata
+This suite of bots interact with Wikidata and Wikipedia using the Pywikibot library. 
