@@ -1,5 +1,6 @@
 # User-related files
 user-config.py
+user-password.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -82,11 +83,13 @@ celerybeat-schedule
 .env
 
 # virtualenv
+.venv
 venv/
 ENV/
 
 # Spyder project settings
 .spyderproject
+.spyproject
 
 # Rope project settings
 .ropeproject
@@ -237,3 +240,19 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# SageMath parsed files
+*.sage.py
+
+# mkdocs documentation
+/site
+
+# End of https://www.gitignore.io/api/python
+
+#pywikibot generated files
+apicache/
+throttle.ctrl
+pywikibot.lwp
+
+#application config files
+app_config.ini
