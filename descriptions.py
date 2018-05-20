@@ -23,13 +23,16 @@ dict_properties = {
     "instance": "P31"
 }
 
-sparql_disambiguation = 'SELECT ?item WHERE {?item wdt:P31 wd:Q4167410 }'
-sparql_disambiguation_sr = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q4167410 . ' \
-                           '?wiki0 <http://schema.org/about> ?item . ' \
-                           '?wiki0 <http://schema.org/isPartOf> <https://sr.wikipedia.org/> }'
-sparql_people = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q5 . ' \
-                '?wiki0 <http://schema.org/about> ?item . ' \
-                '?wiki0 <http://schema.org/isPartOf> <https://sr.wikipedia.org/> }'
+sparql_disambiguation = \
+    'SELECT ?item WHERE {?item wdt:P31 wd:Q4167410 }'
+sparql_disambiguation_sr = \
+    'SELECT ?item WHERE { ?item wdt:P31 wd:Q4167410 . ' \
+    '?wiki0 schema:about ?item . ' \
+    '?wiki0 schema:isPartOf <https://sr.wikipedia.org/> }'
+sparql_people = \
+    'SELECT ?item WHERE { ?item wdt:P31 wd:Q5 . ' \
+    '?wiki0 schema:about ?item . ' \
+    '?wiki0 schema:isPartOf <https://sr.wikipedia.org/> }'
 
 
 def wd_sparql_query(repo, query):
