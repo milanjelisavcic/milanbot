@@ -1,4 +1,7 @@
 # milanbot
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0edc77e69ce44c198c8bd93e5c1d9e66)](https://app.codacy.com/app/milan.jelisavcic/milanbot?utm_source=github.com&utm_medium=referral&utm_content=milanjelisavcic/milanbot&utm_campaign=badger)
+
 This suite of bots interact with Wikidata and Wikipedia using the Pywikibot library.
 
 ## Setup
