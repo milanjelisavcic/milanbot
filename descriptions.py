@@ -9,49 +9,11 @@ import pywikibot as pb
 from pywikibot import pagegenerators as pg
 from pywikibot.data import api as pb_api
 
+import milanbot.transiteration as tr
+from milanbot import languages as langs
+
 logging.basicConfig(level=logging.INFO)
-
-# console = logging.StreamHandler()
-# console.setLevel(logging.INFO)
-# console_formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-# console.setFormatter(console_formatter)
-
 logger = logging.getLogger(__name__)
-# logger.addHandler(console)
-
-cyrillic_transliteration = {
-    u'А': u'A', u'а': u'a',
-    u'Б': u'B', u'б': u'b',
-    u'В': u'V', u'в': u'v',
-    u'Г': u'G', u'г': u'g',
-    u'Д': u'D', u'д': u'd',
-    u'Ђ': u'Đ', u'ђ': u'đ',
-    u'Е': u'E', u'е': u'e',
-    u'Ж': u'Ž', u'ж': u'ž',
-    u'З': u'Z', u'з': u'z',
-    u'И': u'I', u'и': u'i',
-    u'Ј': u'J', u'ј': u'j',
-    u'К': u'K', u'к': u'k',
-    u'Л': u'L', u'л': u'l',
-    u'Љ': u'Lj', u'љ': u'lj',
-    u'М': u'M', u'м': u'm',
-    u'Н': u'N', u'н': u'n',
-    u'Њ': u'Nj', u'њ': u'nj',
-    u'О': u'O', u'о': u'o',
-    u'П': u'P', u'п': u'p',
-    u'Р': u'R', u'р': u'r',
-    u'С': u'S', u'с': u's',
-    u'Т': u'T', u'т': u't',
-    u'Ћ': u'Ć', u'ћ': u'ć',
-    u'У': u'U', u'у': u'u',
-    u'Ф': u'F', u'ф': u'f',
-    u'Х': u'H', u'х': u'h',
-    u'Ц': u'C', u'ц': u'c',
-    u'Ч': u'Č', u'ч': u'č',
-    u'Џ': u'Dž', u'џ': u'dž',
-    u'Ш': u'Š', u'ш': u'š',
-    u' ': u' ', u'%': u'%'
-}
 
 dict_items = {
     "disambiguation": "Q4167410"
@@ -61,85 +23,6 @@ dict_properties = {
     "instance": "P31"
 }
 
-#    'norwegian-bokmal': 'no',
-dict_languages = {
-    'afrikans': 'af',
-    'arabic': 'ar',
-    'armenian': 'hy',
-    'belorussian': 'be',
-    'belorussian-taraskievica': 'be-tarask',
-    'bosnian': 'bs',
-    'bulgarian': 'bg',
-    'catalan': 'ca',
-    'cantonese': 'yue',
-    'chinese': 'zh',
-    'chinese-classical': 'lzh',
-    'chinese-hakka': 'hak',
-    'chinese-min-nan': 'nan',
-    'chinese-cn': 'zh-cn',
-    'chinese-hans': 'zh-hans',
-    'chinese-hant': 'zh-hant',
-    'chinese-hongkong': 'zh-hk',
-    'chinese-mo': 'zh-mo',
-    'chinese-my': 'zh-my',
-    'chinese-singapore': 'zh-sg',
-    'chinese-taiwanese': 'zh-tw',
-    'czech': 'cs',
-    'croatian': 'hr',
-    'dutch': 'nl',
-    'dutch-low-saxon': 'nds-nl',
-    'english': 'en',
-    'english-british': 'en-gb',
-    'english-canadian': 'en-ca',
-    'estonian': 'et',
-    'esperanto': 'eo',
-    'frisian-west': 'fy',
-    'frisian-north': 'frr',
-    'french': 'fr',
-    'finish': 'fi',
-    'galician': 'gl',
-    'german': 'de',
-    'german-austrian': 'de-at',
-    'german-swiss': 'de-ch',
-    'georgian': 'ka',
-    'greek': 'el',
-    'italian': 'it',
-    'japanese': 'ja',
-    'kannada': 'kn',
-    'khmer': 'km',
-    'korean': 'ko',
-    'latvian': 'lv',
-    'macedonian': 'mk',
-    'malayalam': 'ml',
-    'mazandarani': 'mzn',
-    'norwegian-nynorsk': 'nn',
-    'occitan': 'oc',
-    'odia': 'or',
-    'pashto': 'ps',
-    'persian': 'fa',
-    'polish': 'pl',
-    'portuguese': 'pt',
-    'portuguese-brazilian': 'pt-br',
-    'ripuarian': 'ksh',
-    'romanian': 'ro',
-    'russian': 'ru',
-    'sorani': 'ckb',
-    'scots': 'sco',
-    'serbian': 'sr',
-    'sr-cyrillic': 'sr-ec',
-    'sr-latin': 'sr-el',
-    'serbocroatian': 'sh',
-    'sicilian': 'scn',
-    'spanish': 'es',
-    'swedish': 'sv',
-    'tamil': 'ta',
-    'thai': 'th',
-    'turkish': 'tr',
-    'ukrainian': 'uk',
-    'vietnamese': 'vi',
-    'welsh': 'cy',
-}
-
 sparql_disambiguation = 'SELECT ?item WHERE {?item wdt:P31 wd:Q4167410 }'
 sparql_disambiguation_sr = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q4167410 . ' \
                            '?wiki0 <http://schema.org/about> ?item . ' \
@@ -147,20 +30,6 @@ sparql_disambiguation_sr = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q4167410 . ' \
 sparql_people = 'SELECT ?item WHERE { ?item wdt:P31 wd:Q5 . ' \
                 '?wiki0 <http://schema.org/about> ?item . ' \
                 '?wiki0 <http://schema.org/isPartOf> <https://sr.wikipedia.org/> }'
-
-
-def transliterate(word, transliteration_table):
-    converted_word = ''
-    try:
-        for char in word:
-            if char in transliteration_table:
-                transliteration_char = transliteration_table[char]
-            else:
-                transliteration_char = char
-            converted_word += transliteration_char
-    except Exception as e:
-        print(e)
-    return converted_word
 
 
 def wd_sparql_query(repo, query):
@@ -222,7 +91,7 @@ def add_descriptions(repo, language, query):
     no_item = 1
     for item in wd_sparql_query(repo, query):
         try:
-            if not all(k in item.descriptions for k in dict_languages.values()):
+            if not all(k in item.descriptions for k in langs.values()):
                 no_item += 1
                 for claim_instance, length in \
                         wd_extract_instance_from_claim(item, dict_properties.get('instance')):
@@ -231,7 +100,7 @@ def add_descriptions(repo, language, query):
                         break
                     labels = claim_instance.labels
                     dict_descriptions = dict()
-                    for lang_code in dict_languages.values():
+                    for lang_code in langs.values():
                         if lang_code not in item.descriptions:
                             dict_descriptions[lang_code] = labels[lang_code]
                         elif labels[lang_code] is not item.descriptions[lang_code]:
@@ -275,10 +144,10 @@ def add_labels(repo, language, title):
     if language in labels:
         try:
             label = labels[language]
-            translit = transliterate(label, cyrillic_transliteration)
+            translit = tr.transliterate(label)
             dict_labels = dict()
-            dict_labels[dict_languages.get('sr-cyrillic')] = label
-            dict_labels[dict_languages.get('sr-latin')] = translit
+            dict_labels[langs.get('sr-cyrillic')] = label
+            dict_labels[langs.get('sr-latin')] = translit
             summary = u'Added labels for [{}] script variations.'.format(language)
 
             item.editLabels(labels=dict_labels, summary=summary)
@@ -289,7 +158,7 @@ def add_labels(repo, language, title):
 def main():
     logger.info("---- start ----")
     repo = pb.Site('wikidata', 'wikidata')
-    language = dict_languages.get('serbian')
+    language = langs.get('serbian')
 
     logger.info("Main referring language is: {lang}".format(lang=language))
 
