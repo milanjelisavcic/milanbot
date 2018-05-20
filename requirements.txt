@@ -1,1 +1,2 @@
 pywikibot==3.0.20180505
+requests-oauthlib

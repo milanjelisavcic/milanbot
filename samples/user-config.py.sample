@@ -3,19 +3,31 @@
 # Wikipedia
 mylang = 'en'
 family = 'wikipedia'
-usernames['wikipedia']['en'] = u'YOUR USERNAME'
+usernames['wikipedia']['en'] = u'ExampleUser'
 
 # Wikidata production
 mylang = 'en'
 family = 'wikidata'
-usernames['wikidata']['en'] = u'YOUR USERNAME'
+usernames['wikidata']['en'] = u'ExampleUser'
 
 # Wikidata test
 mylang = 'test'
 family = 'wikidata'
-usernames['wikidata']['test'] = u'YOUR USERNAME'
+usernames['wikidata']['test'] = u'ExampleUser'
 
 # password file (optional)
-# If you choose not to store your password in a file,
-# you can enter it when logging in instead.
+# If you choose not to store your password in a file, you can enter it when
+# logging in instead.
 password_file = 'user-password.py'
+
+# OAuth login
+# A more secure way of login is OAuth instead of password-based login.
+# A bot token must be created on meta.wikimedia.org and configured in your
+# pywikibot `user-config.py` as
+# usernames['wikipedia']['*'] =
+#   usernames['wikidata']['*'] =
+#   u'ExampleUser'
+#
+# authenticate['*.wikipedia.org'] =
+#   authenticate['wikidata']['*'] =
+#   ('consumer_token','consumer_secret', 'access_token', 'access_secret')
