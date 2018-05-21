@@ -11,9 +11,10 @@ from pywikibot.data import api as pb_api
 
 import milanbot.transiteration as tr
 from milanbot import languages as langs
+import milanbot.logger as log
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = log.terminal_logger()
+file_logger = log.file_logger("disambiguations.csv")
 
 dict_items = {
     "disambiguation": "Q4167410"
@@ -85,12 +86,6 @@ def add_descriptions(repo, language, query):
     :param query:
     :return:
     """
-    multiple_statements_logger = logging.getLogger("multiple_statements")
-    handler = logging.FileHandler('multiple_statements.log')
-    formatter = logging.Formatter('%(asctime)s - %(message)s')
-    handler.setFormatter(formatter)
-    multiple_statements_logger.addHandler(handler)
-
     no_item = 1
     for item in wd_sparql_query(repo, query):
         try:
@@ -99,7 +94,9 @@ def add_descriptions(repo, language, query):
                 for claim_instance, length in \
                         wd_extract_instance_from_claim(item, dict_properties.get('instance')):
                     if length > 1:
-                        multiple_statements_logger.info("{no}: {item}".format(no=no_item, item=item.title()))
+                        file_logger.info("{item},{no}".format(
+                            no=no_item,
+                            item=item.title()))
                         break
                     labels = claim_instance.labels
                     dict_descriptions = dict()
@@ -119,17 +116,22 @@ def add_descriptions(repo, language, query):
                         item.editDescriptions(descriptions=dict_descriptions, summary=summary)
 
         except pb_api.APIError as e:
-            multiple_statements_logger.error("{no}: API error on {item} - {message}"
-                                             .format(no=no_item, item=item.title(),
-                                                     message=u''.join(str(e)).encode('utf-8')))
+            file_logger.error("{item},{no},{message}".format(
+                no=no_item,
+                item=item.title(),
+                message=u''.join(str(e)).encode('utf-8')))
             pass
         except ValueError as e:
-            logger.error("{no}: ValueError occurred on {item} - {message}"
-                         .format(no=no_item, item=item.title(), message=u''.join(str(e)).encode('utf-8')))
+            file_logger.error("{item},{no},{message}".format(
+                no=no_item,
+                item=item.title(),
+                message=u''.join(str(e)).encode('utf-8')))
             pass
         except Exception as e:
-            logger.error("{no}: Undefined error on {item} - {message}"
-                         .format(no=no_item, item=item.title(), message=u''.join(str(e)).encode('utf-8')))
+            file_logger.error("{item},{no},{message}".format(
+                no=no_item,
+                item=item.title(),
+                message=u''.join(str(e)).encode('utf-8')))
             pass
 
 

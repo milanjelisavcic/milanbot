@@ -1,10 +1,11 @@
 #!/usr/local/bin/python3
-import logging
+#-*- encoding: Utf-8 -*-
 
 import pywikibot as pwb
+import milanbot.logger as log
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("MilanBot")
+logger = log.terminal_logger()
+file_logger = log.file_logger("test.csv")
 
 def main():
     """
