@@ -36,7 +36,7 @@ cyrillic_transliteration = {
 
 # Supported languages that 'MilanBot' works with
 languages = {
-    'afrikans': 'af',
+    'afrikaans': 'af',
     'arabic': 'ar',
     'armenian': 'hy',
     'belorussian': 'be',
@@ -112,3 +112,14 @@ languages = {
     'vietnamese': 'vi',
     'welsh': 'cy',
 }
+
+sparql_disambiguation = \
+    'SELECT ?item WHERE {?item wdt:P31 wd:Q4167410 }'
+sparql_disambiguation_sr = \
+    'SELECT ?item WHERE { ?item wdt:P31 wd:Q4167410 . ' \
+    '?wiki0 schema:about ?item . ' \
+    '?wiki0 schema:isPartOf <https://sh.wikipedia.org/> }'
+sparql_people = \
+    'SELECT ?item WHERE { ?item wdt:P31 wd:Q5 . ' \
+    '?wiki0 schema:about ?item . ' \
+    '?wiki0 schema:isPartOf <https://sr.wikipedia.org/> }'

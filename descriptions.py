@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import logging
 import codecs
 
 import pywikibot as pb
-from pywikibot import pagegenerators as pg
 from pywikibot.data import api as pb_api
 
-import milanbot.transiteration as tr
 from milanbot import languages as langs
+from milanbot import sparql_disambiguation_sr as sparql
+import milanbot.transiteration as tr
 import milanbot.logger as log
+import milanbot.querier as wdq
 
 logger = log.terminal_logger()
 file_logger = log.file_logger("disambiguations.csv")
@@ -23,30 +23,6 @@ dict_items = {
 dict_properties = {
     "instance": "P31"
 }
-
-sparql_disambiguation = \
-    'SELECT ?item WHERE {?item wdt:P31 wd:Q4167410 }'
-sparql_disambiguation_sr = \
-    'SELECT ?item WHERE { ?item wdt:P31 wd:Q4167410 . ' \
-    '?wiki0 schema:about ?item . ' \
-    '?wiki0 schema:isPartOf <https://sr.wikipedia.org/> }'
-sparql_people = \
-    'SELECT ?item WHERE { ?item wdt:P31 wd:Q5 . ' \
-    '?wiki0 schema:about ?item . ' \
-    '?wiki0 schema:isPartOf <https://sr.wikipedia.org/> }'
-
-
-def wd_sparql_query(repo, query):
-    """
-    SPARQL query retrieving generator with a Wikidata list of items
-    :param repo:
-    :param query: SPARQL query
-    :return: generator
-    """
-    generator = pg.WikidataSPARQLPageGenerator(query, site=repo)
-    for instance in generator:
-        instance.get(get_redirect=True)
-        yield instance
 
 
 def wd_extract_instance_from_claim(item, wd_property):
@@ -87,7 +63,7 @@ def add_descriptions(repo, language, query):
     :return:
     """
     no_item = 1
-    for item in wd_sparql_query(repo, query):
+    for item in wdq.wd_sparql_query(repo, query):
         try:
             if not all(k in item.descriptions for k in langs.values()):
                 no_item += 1
@@ -107,12 +83,12 @@ def add_descriptions(repo, language, query):
                             dict_descriptions[lang_code] = labels[lang_code]
 
                     if dict_descriptions:
-                        summary = u'Added description for [{langs}] language.' \
+                        summary = u'Add description in [{langs}] language(s).' \
                             .format(langs=','.join(sorted(map(str, dict_descriptions.keys()))))
-                        logger.debug("{ith} edit {q} for the [{langs}] descriptions"
-                                     .format(ith=no_item,
-                                             q=item.title(),
-                                             langs=','.join(sorted(map(str, dict_descriptions.keys())))))
+                        file_logger.info("{q},{ith},[{langs}]".format(
+                            ith=no_item,
+                            q=item.title(),
+                            langs=','.join(sorted(map(str, dict_descriptions.keys())))))
                         item.editDescriptions(descriptions=dict_descriptions, summary=summary)
 
         except pb_api.APIError as e:
@@ -161,19 +137,16 @@ def add_labels(repo, language, title):
 
 
 def main():
-    logger.info("---- start ----")
     repo = pb.Site('wikidata', 'wikidata')
     language = langs.get('serbian')
-
-    logger.info("Main referring language is: {lang}".format(lang=language))
-
-    # title = 'Q4167410'
-    # add_labels(repo, language, title)
-
-    add_descriptions(repo, language, sparql_disambiguation_sr)
-
-    logger.info("---- end ----")
-
+    add_descriptions(repo, language, sparql)
 
 if __name__ == '__main__':
-    main()
+    try:
+        logger.info("Starting the bot...")
+        main()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        logger.info("Shutting down the bot...")
+        pass
