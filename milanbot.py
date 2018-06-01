@@ -1,6 +1,8 @@
 #!/usr/local/bin/python3
 #-*- encoding: Utf-8 -*-
 
+import yagmail
+
 import pywikibot as pwb
 import milanbot.logger as log
 
@@ -23,8 +25,11 @@ if __name__ == '__main__':
         pass
     finally:
         logger.info("Shutting down the bot...")
-        pass
-
+        yag = yagmail.SMTP(user='-----@gmail.com',
+                           oauth2_file='oauth2_creds.json')
+        yag.send('-----@gmail.com',
+                 subject="hello",
+                 contents='Hello')
 
 
 

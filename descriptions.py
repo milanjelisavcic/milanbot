@@ -5,6 +5,7 @@ import os
 import sys
 import json
 import codecs
+import socket
 import yagmail
 
 import pywikibot as pb
@@ -20,7 +21,12 @@ with open('milanbot/languages.json') as fobj:
     langs = json.load(fobj)
 
 logger = log.terminal_logger()
-file_logger = log.file_logger("disambiguations.csv")
+green_logger = log.file_logger("d_green.csv", name="GreenM")
+orange_logger = log.file_logger("d_orange.csv", name="OrangeM")
+red_logger = log.file_logger("d_red.csv", name="RedM")
+green_logger.info("no,qid")
+orange_logger.info("no,qid,n_langs")
+red_logger.info("no,qid,message")
 
 dict_items = {
     "disambiguation": "Q4167410"
@@ -74,12 +80,13 @@ def add_descriptions(repo, language, query):
         try:
             if not all(k in item.descriptions for k in langs.keys()):
                 no_item += 1
-                for claim_instance, length in \
-                        wd_extract_instance_from_claim(item, dict_properties.get('instance')):
+                for claim_instance, length in wd_extract_instance_from_claim(
+                        item=item,
+                        wd_property=dict_properties.get('instance')):
                     if length > 1:
-                        file_logger.info("{item},{no}".format(
+                        orange_logger.info("{no},{qid}".format(
                             no=no_item,
-                            item=item.title()))
+                            qid=item.title()))
                         break
                     labels = claim_instance.labels
                     dict_descriptions = dict()
@@ -90,28 +97,30 @@ def add_descriptions(repo, language, query):
                     if dict_descriptions:
                         summary = u'Add description in [{langs}] language(s).' \
                             .format(langs=','.join(sorted(map(str, dict_descriptions.keys()))))
-                        file_logger.info("{q},{ith},[{langs}]".format(
-                            ith=no_item,
-                            q=item.title(),
-                            langs=','.join(sorted(map(str, dict_descriptions.keys())))))
-                        item.editDescriptions(descriptions=dict_descriptions, summary=summary)
+                        green_logger.info("{no},{qid},{n_langs}".format(
+                            no=no_item,
+                            qid=item.title(),
+                            n_langs=len(dict_descriptions.keys())))
+                        item.editDescriptions(
+                            descriptions=dict_descriptions,
+                            summary=summary)
 
         except pb_api.APIError as e:
-            file_logger.error("{item},{no},{message}".format(
+            red_logger.error("{no},{qid},{message}".format(
                 no=no_item,
-                item=item.title(),
+                qid=item.title(),
                 message=u''.join(str(e)).encode('utf-8')))
             pass
         except ValueError as e:
-            file_logger.error("{item},{no},{message}".format(
+            red_logger.error("{no},{qid},{message}".format(
                 no=no_item,
-                item=item.title(),
+                qid=item.title(),
                 message=u''.join(str(e)).encode('utf-8')))
             pass
         except Exception as e:
-            file_logger.error("{item},{no},{message}".format(
+            red_logger.error("{no},{qid},{message}".format(
                 no=no_item,
-                item=item.title(),
+                qid=item.title(),
                 message=u''.join(str(e)).encode('utf-8')))
             pass
 
@@ -153,4 +162,20 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         pass
     finally:
+        yag = yagmail.SMTP(user='-----@gmail.com',
+                           oauth2_file='oauth2_creds.json')
+        yag.send('-----@gmail.com',
+                 subject="{user}@{host}".format(
+                     user=os.getlogin(),
+                     host=socket.gethostname(),
+                 ),
+                 contents='Edit statistics for lang\n'
+                          'green: {green}\n'
+                          'orange: {orange}\n'
+                          'red: {red}'.format(
+                     green=sum(1 for row in open("d_green.csv")),
+                     orange=sum(1 for row in open("d_orange.csv")),
+                     red=sum(1 for row in open("d_red.csv")),
+                 ),
+                 attachments=["d_green.csv", "d_orange.csv", "d_red.csv"])
         pass
