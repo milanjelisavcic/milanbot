@@ -44,11 +44,11 @@ def wd_extract_instance_from_claim(item, wd_property):
     :param wd_property: a string key for a specific claim set
     :return: generator pair of an item and a length of claim set
     """
-    list_claims = item.claims.get(wd_property)
-    for claim in list_claims:
+    claims = item.claims.get(wd_property)
+    for claim in claims:
         instance = claim.getTarget()
         instance.get(get_redirect=True)
-        yield instance, len(list_claims)
+        yield instance, len(claims), claims
 
 
 def log_done(verbose, formatstring, *parameters):
@@ -80,29 +80,31 @@ def add_descriptions(repo, language, query):
         try:
             if not all(k in item.descriptions for k in langs.keys()):
                 no_item += 1
-                for claim_instance, length in wd_extract_instance_from_claim(
+                for instance, length, claims in wd_extract_instance_from_claim(
                         item=item,
                         wd_property=dict_properties.get('instance')):
                     if length > 1:
-                        orange_logger.info("{no},{qid}".format(
+                        orange_logger.info("{no},{qid},{instances}".format(
                             no=no_item,
-                            qid=item.title()))
+                            qid=item.title(),
+                            instances=[cl.getTarget().title() for cl in claims],
+                        ))
                         break
-                    labels = claim_instance.labels
-                    dict_descriptions = dict()
+                    labels = instance.labels
+                    descriptions = dict()
                     for lang_code in langs.keys():
                         if lang_code not in item.descriptions and lang_code in labels:
-                            dict_descriptions[lang_code] = labels[lang_code]
+                            descriptions[lang_code] = labels[lang_code]
 
-                    if dict_descriptions:
+                    if descriptions:
                         summary = u'Add description in [{langs}] language(s).' \
-                            .format(langs=','.join(sorted(map(str, dict_descriptions.keys()))))
+                            .format(langs=','.join(sorted(map(str, descriptions.keys()))))
                         green_logger.info("{no},{qid},{n_langs}".format(
                             no=no_item,
                             qid=item.title(),
-                            n_langs=len(dict_descriptions.keys())))
+                            n_langs=len(descriptions.keys())))
                         item.editDescriptions(
-                            descriptions=dict_descriptions,
+                            descriptions=descriptions,
                             summary=summary)
 
         except pb_api.APIError as e:
