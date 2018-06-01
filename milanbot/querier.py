@@ -1,5 +1,6 @@
 from pywikibot import pagegenerators as pg
 
+
 def wd_sparql_query(repo, query):
     """
     SPARQL query retrieving generator with a Wikidata list of items

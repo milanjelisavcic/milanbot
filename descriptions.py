@@ -1,17 +1,23 @@
 # !/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
+import os
 import sys
+import json
 import codecs
+import yagmail
 
 import pywikibot as pb
 from pywikibot.data import api as pb_api
 
-from milanbot import languages as langs
 from milanbot import sparql_disambiguation_sr as sparql
 import milanbot.transiteration as tr
 import milanbot.logger as log
 import milanbot.querier as wdq
+
+# Supported languages that 'MilanBot' works with
+with open('milanbot/languages.json') as fobj:
+    langs = json.load(fobj)
 
 logger = log.terminal_logger()
 file_logger = log.file_logger("disambiguations.csv")
@@ -62,10 +68,11 @@ def add_descriptions(repo, language, query):
     :param query:
     :return:
     """
+    logger.info("Adding descriptions...")
     no_item = 1
     for item in wdq.wd_sparql_query(repo, query):
         try:
-            if not all(k in item.descriptions for k in langs.values()):
+            if not all(k in item.descriptions for k in langs.keys()):
                 no_item += 1
                 for claim_instance, length in \
                         wd_extract_instance_from_claim(item, dict_properties.get('instance')):
@@ -76,10 +83,8 @@ def add_descriptions(repo, language, query):
                         break
                     labels = claim_instance.labels
                     dict_descriptions = dict()
-                    for lang_code in langs.values():
-                        if lang_code not in item.descriptions:
-                            dict_descriptions[lang_code] = labels[lang_code]
-                        elif labels[lang_code] is not item.descriptions[lang_code]:
+                    for lang_code in langs.keys():
+                        if lang_code not in item.descriptions and lang_code in labels:
                             dict_descriptions[lang_code] = labels[lang_code]
 
                     if dict_descriptions:
@@ -127,8 +132,8 @@ def add_labels(repo, language, title):
             label = labels[language]
             translit = tr.transliterate(label)
             dict_labels = dict()
-            dict_labels[langs.get('sr-cyrillic')] = label
-            dict_labels[langs.get('sr-latin')] = translit
+            dict_labels['sr-ec'] = label
+            dict_labels['sr-el'] = translit
             summary = u'Added labels for [{}] script variations.'.format(language)
 
             item.editLabels(labels=dict_labels, summary=summary)
@@ -138,7 +143,7 @@ def add_labels(repo, language, title):
 
 def main():
     repo = pb.Site('wikidata', 'wikidata')
-    language = langs.get('serbian')
+    language = 'sr'
     add_descriptions(repo, language, sparql)
 
 if __name__ == '__main__':
@@ -148,5 +153,4 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         pass
     finally:
-        logger.info("Shutting down the bot...")
         pass
