@@ -21,3 +21,17 @@ def file_logger(file, name="FileMilan", level=logging.INFO):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger
+
+
+def summary():
+    return """\
+        <html>
+          <head></head>
+          <body>
+            <p>Summary<br>
+               How are you?<br>
+               Here is the <a href="http://www.python.org">link</a> you wanted.
+            </p>
+          </body>
+        </html>
+        """

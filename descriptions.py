@@ -158,6 +158,25 @@ def main():
     add_descriptions(repo, language, sparql)
 
 
+def notify(attachments=None):
+    yag = yagmail.SMTP(user='-----@gmail.com',
+                       oauth2_file='oauth2_creds.json')
+    yag.send('-----@gmail.com',
+             subject="{user}@{host}".format(
+                 user=os.getlogin(),
+                 host=socket.gethostname(),
+             ),
+             contents='Edit statistics for lang\n'
+                      'green: {green}\n'
+                      'orange: {orange}\n'
+                      'red: {red}'.format(
+                 green=sum(1 for row in open("d_green.csv")),
+                 orange=sum(1 for row in open("d_orange.csv")),
+                 red=sum(1 for row in open("d_red.csv")),
+             ),
+             attachments=attachments)
+
+
 def cleanup():
     os.remove("d_green.csv")
     os.remove("d_orange.csv")
@@ -171,21 +190,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         pass
     finally:
-        yag = yagmail.SMTP(user='-----@gmail.com',
-                           oauth2_file='oauth2_creds.json')
-        yag.send('-----@gmail.com',
-                 subject="{user}@{host}".format(
-                     user=os.getlogin(),
-                     host=socket.gethostname(),
-                 ),
-                 contents='Edit statistics for lang\n'
-                          'green: {green}\n'
-                          'orange: {orange}\n'
-                          'red: {red}'.format(
-                     green=sum(1 for row in open("d_green.csv")),
-                     orange=sum(1 for row in open("d_orange.csv")),
-                     red=sum(1 for row in open("d_red.csv")),
-                 ),
-                 attachments=["d_green.csv", "d_orange.csv", "d_red.csv"])
+        notify(["d_green.csv", "d_orange.csv", "d_red.csv"])
         cleanup()
         pass
