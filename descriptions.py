@@ -157,6 +157,13 @@ def main():
     language = 'sr'
     add_descriptions(repo, language, sparql)
 
+
+def cleanup():
+    os.remove("d_green.csv")
+    os.remove("d_orange.csv")
+    os.remove("d_red.csv")
+
+
 if __name__ == '__main__':
     try:
         logger.info("Starting the bot...")
@@ -180,4 +187,5 @@ if __name__ == '__main__':
                      red=sum(1 for row in open("d_red.csv")),
                  ),
                  attachments=["d_green.csv", "d_orange.csv", "d_red.csv"])
+        cleanup()
         pass
