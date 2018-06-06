@@ -1,0 +1,8 @@
+# Disambiguation items that have the sitelink to a specific language Wikipedia
+SELECT ?item
+WHERE
+{
+    ?item wdt:P31 wd:Q4167410 .
+    ?wiki0 schema:about ?item ;
+           schema:isPartOf <https://sh.wikipedia.org/>
+}
