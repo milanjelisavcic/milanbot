@@ -14,6 +14,7 @@ from pywikibot.data import api as pb_api
 import milanbot.transiteration as tr
 import milanbot.logger as log
 import milanbot.querier as wdq
+from milanbot.config import parser
 
 # Supported languages that 'MilanBot' works with
 with open('milanbot/languages.json') as fobj:
@@ -151,10 +152,10 @@ def add_labels(repo, language, title):
             print(e)
 
 
-def main():
+def main(conf):
     repo = pb.Site('wikidata', 'wikidata')
     language = 'sr'
-    with open('queries/disambiguations.rq', 'r') as query_file:
+    with open(conf.query, 'r') as query_file:
         sparql = query_file.read()
     add_descriptions(repo, language, sparql)
 
@@ -185,9 +186,10 @@ def cleanup():
 
 
 if __name__ == '__main__':
+    conf = parser.parse_args()
     try:
         logger.info("Starting the bot...")
-        main()
+        main(conf)
     except KeyboardInterrupt:
         pass
     finally:

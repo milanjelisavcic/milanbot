@@ -5,11 +5,12 @@ import yagmail
 
 import pywikibot as pwb
 import milanbot.logger as log
+from milanbot.config import parser
 
 logger = log.terminal_logger()
 file_logger = log.file_logger("test.csv")
 
-def main():
+def main(conf):
     """
     Main function
     :return:
@@ -19,8 +20,9 @@ def main():
 
 
 if __name__ == '__main__':
+    conf = parser.parse_args()
     try:
-        main()
+        main(conf)
     except KeyboardInterrupt:
         pass
     finally:
