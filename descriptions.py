@@ -11,7 +11,6 @@ import yagmail
 import pywikibot as pb
 from pywikibot.data import api as pb_api
 
-from milanbot import sparql_disambiguation_sr as sparql
 import milanbot.transiteration as tr
 import milanbot.logger as log
 import milanbot.querier as wdq
@@ -155,6 +154,8 @@ def add_labels(repo, language, title):
 def main():
     repo = pb.Site('wikidata', 'wikidata')
     language = 'sr'
+    with open('queries/disambiguations.rq', 'r') as query_file:
+        sparql = query_file.read()
     add_descriptions(repo, language, sparql)
 
 
