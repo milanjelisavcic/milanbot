@@ -1,5 +1,5 @@
 #!/usr/local/bin/python3
-#-*- encoding: Utf-8 -*-
+# -*- encoding: Utf-8 -*-
 
 import yagmail
 
@@ -9,6 +9,7 @@ from milanbot.config import parser
 
 logger = log.terminal_logger()
 file_logger = log.file_logger("test.csv")
+
 
 def main(conf):
     """

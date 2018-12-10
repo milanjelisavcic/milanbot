@@ -3,7 +3,6 @@
 
 import os
 import sys
-import json
 import codecs
 import socket
 import yagmail
@@ -11,14 +10,11 @@ import yagmail
 import pywikibot as pb
 from pywikibot.data import api as pb_api
 
+from milanbot import languages
+from milanbot.config import parser
 import milanbot.transiteration as tr
 import milanbot.logger as log
 import milanbot.querier as wdq
-from milanbot.config import parser
-
-# Supported languages that 'MilanBot' works with
-with open('milanbot/languages.json') as fobj:
-    langs = json.load(fobj)
 
 logger = log.terminal_logger()
 green_logger = log.file_logger("d_green.csv", name="GreenM")
@@ -78,7 +74,7 @@ def add_descriptions(repo, language, query):
     no_item = 1
     for item in wdq.wd_sparql_query(repo, query):
         try:
-            if not all(k in item.descriptions for k in langs.keys()):
+            if not all(k in item.descriptions for k in languages.keys()):
                 no_item += 1
                 for instance, length, claims in wd_extract_instance_from_claim(
                         item=item,
@@ -92,7 +88,7 @@ def add_descriptions(repo, language, query):
                         break
                     labels = instance.labels
                     descriptions = dict()
-                    for lang_code in langs.keys():
+                    for lang_code in languages.keys():
                         if lang_code not in item.descriptions and lang_code in labels:
                             descriptions[lang_code] = labels[lang_code]
 
@@ -102,7 +98,7 @@ def add_descriptions(repo, language, query):
                         green_logger.info("{no},{qid},{n_langs}".format(
                             no=no_item,
                             qid=item.title(),
-                            n_langs=len(descriptions.keys())))
+                            n_langs=len(descriptions)))
                         item.editDescriptions(
                             descriptions=descriptions,
                             summary=summary)
@@ -161,9 +157,9 @@ def main(conf):
 
 
 def notify(attachments=None):
-    yag = yagmail.SMTP(user='-----@gmail.com',
+    yag = yagmail.SMTP(user='milan.jelisavcic@gmail.com',
                        oauth2_file='oauth2_creds.json')
-    yag.send('-----@gmail.com',
+    yag.send('milan.jelisavcic@gmail.com',
              subject="{user}@{host}".format(
                  user=os.getlogin(),
                  host=socket.gethostname(),
