@@ -1,0 +1,6 @@
+# Disambiguation items that have the sitelink to a specific language Wikipedia
+SELECT ?item
+WHERE
+{
+    ?item wdt:P27 wd:Q30.
+}
