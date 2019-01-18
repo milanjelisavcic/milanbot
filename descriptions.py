@@ -1,5 +1,5 @@
 # !/usr/local/bin/python
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 
 import os
 import sys
@@ -13,7 +13,7 @@ from pywikibot.data import api as pb_api
 from milanbot import languages
 from milanbot.config import parser
 import milanbot.transiteration as tr
-import milanbot.logger as log
+import milanbot.util.logger as log
 import milanbot.querier as wdq
 
 logger = log.terminal_logger()
