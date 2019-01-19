@@ -1,7 +1,8 @@
+import pywikibot as pwb
 from pywikibot import pagegenerators as pg
 
 
-def wd_sparql_query(repo, query):
+def wd_sparql(query, repo=pwb.Site('wikidata', 'wikidata')):
     """
     SPARQL query retrieving generator with a Wikidata list of items
     :param repo:
@@ -10,5 +11,6 @@ def wd_sparql_query(repo, query):
     """
     generator = pg.WikidataSPARQLPageGenerator(query, site=repo)
     for instance in generator:
-        instance.get(get_redirect=True)
-        yield instance
+        if instance.exists():
+            instance.get(get_redirect=True)
+            yield instance

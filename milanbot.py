@@ -7,6 +7,7 @@ from pywikibot import pagegenerators as pg
 import milanbot.util.logger as log
 import milanbot.transiteration as tr
 from milanbot.config import parser
+from milanbot.querier import wd_sparql
 
 logger = log.terminal_logger()
 file_logger = log.file_logger("test.csv")
@@ -19,20 +20,18 @@ def main(settings):
     """
     logger.info("Starting the bot...")
 
-    # Connect to Wikidata
-    repo = pwb.Site('wikidata', 'wikidata')
-
     # Get the query
     with open(settings.query, 'r') as query_file:
         sparql = query_file.read()
 
     # Retrieve the SPARQL results
-    sparql_pages = pg.WikidataSPARQLPageGenerator(sparql, repo)
+    sparql_pages = wd_sparql(query=sparql)
+
     counter = 1
     for page in sparql_pages:
         instance = page.get(get_redirect=True)
 
-        gender = instance['claims']['P21']
+        gender = instance['claims'][u'P21']
         if len(gender) > 1:
             continue
         gender = gender[0].target.id
@@ -147,8 +146,4 @@ if __name__ == '__main__':
         pass
     finally:
         logger.info("Shutting down the bot...")
-        # yag = yagmail.SMTP(user='-----@gmail.com',
-        #                    oauth2_file='oauth2_creds.json')
-        # yag.send('-----@gmail.com',
-        #          subject="hello",
-        #          contents='Hello')
+        pwb.stopme()

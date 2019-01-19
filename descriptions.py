@@ -72,7 +72,7 @@ def add_descriptions(repo, language, query):
     """
     logger.info("Adding descriptions...")
     no_item = 1
-    for item in wdq.wd_sparql_query(repo, query):
+    for item in wdq.wd_sparql(repo, query):
         try:
             if not all(k in item.descriptions for k in languages.keys()):
                 no_item += 1
