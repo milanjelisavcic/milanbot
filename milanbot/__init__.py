@@ -2,7 +2,7 @@ import json
 
 
 # Transliteration map from Cyrillic to Latin script
-with open('milanbot/languages.json') as json_file:
+with open('milanbot/transliteration.json') as json_file:
     cyrillic_transliteration = json.load(json_file)
 
 # Supported languages that 'MilanBot' works with
