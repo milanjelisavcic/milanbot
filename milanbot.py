@@ -28,6 +28,7 @@ def main(settings):
 
     # Retrieve the SPARQL results
     sparql_pages = pg.WikidataSPARQLPageGenerator(sparql, repo)
+    counter = 1
     for page in sparql_pages:
         instance = page.get(get_redirect=True)
 
@@ -74,25 +75,40 @@ def main(settings):
         descriptions[u'sr-el'] = tr.transliterate(description)
         page.editDescriptions(
             descriptions=descriptions,
-            summary=u'Setting/updating Serbian descriptions.')
-        print('Success!!')
+            summary=u'Setting/updating Serbian descriptions: {}.'.format(description))
+        print('Added description {count}: {desc}'.format(
+            count=counter,
+            desc=description
+        ))
+        counter += 1
+        if counter == 1000:
+            break
 
 
 def extract_occupations(gender, instance):
     occupations = instance['claims'][u'P106']
     watchdog = 1
+    occupation_stack = list()
     for occupation in occupations:
         occupation = occupation.target.get()
         if gender == u'Q1775415' and u'P2521' in occupation['claims']:
             occupation = occupation['claims']['P2521']
         elif gender == u'Q499327' and u'P3321' in occupation['claims']:
             occupation = occupation['claims']['P3321']
+        else:
+            break
 
-        occupation_stack = list()
         for name in occupation:
-            if u'sr' == name.target.language:
-                occupation_stack.append(name.target.text)
-                break
+            try:
+                target = name.getTarget()
+                if target is not None and u'sr' == target.language:
+                    occupation_stack.append(name.target.text)
+                    break
+            except AttributeError as e:
+                print('`target`: {obj} has no object `target`: {err}'.format(
+                    obj=name.getID(),
+                    err=e
+                ))
 
         watchdog += 1
         if watchdog > 5:
