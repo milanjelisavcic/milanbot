@@ -2,7 +2,6 @@
 #-*- coding: utf-8 -*-
 
 import pywikibot as pwb
-from pywikibot import pagegenerators as pg
 
 import milanbot.util.logger as log
 import milanbot.transiteration as tr
@@ -31,7 +30,7 @@ def main(settings):
     for page in sparql_pages:
         instance = page.get(get_redirect=True)
 
-        gender = instance['claims'][u'P21']
+        gender = page['claims'][u'P21']
         if len(gender) > 1:
             continue
         gender = gender[0].target.id
